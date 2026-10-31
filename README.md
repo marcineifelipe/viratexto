@@ -2,6 +2,12 @@
 
 Plataforma de transcrição de áudio e vídeo com IA. Converte arquivos de mídia em texto com identificação de falantes, timestamps e suporte a múltiplos idiomas.
 
+**[Acessar o ViraTexto](https://viratexto-gamma.vercel.app)**
+
+![Transcrição concluída com timestamps e exportação em TXT e SRT](docs/resultado.png)
+
+![Tela inicial: envio de arquivo ou gravação pelo microfone](docs/upload.png)
+
 ## Funcionalidades
 
 - Upload de arquivos de áudio e vídeo (MP3, MP4, WAV, M4A, WEBM e outros)
