@@ -1,0 +1,1 @@
+UPDATE storage.buckets SET file_size_limit = 125829120 WHERE id = 'audio-files';
