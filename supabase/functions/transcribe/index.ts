@@ -42,6 +42,23 @@ function getRequiredEnv(name: string): string {
   return value;
 }
 
+// Chaves novas (sb_secret_ / sb_publishable_) chegam como JSON em
+// SUPABASE_SECRET_KEYS / SUPABASE_PUBLISHABLE_KEYS. As legadas ficam
+// como fallback para projetos que ainda nao as desativaram.
+function getSupabaseKey(newVar: string, legacyVar: string): string {
+  const json = Deno.env.get(newVar);
+  if (json) {
+    try {
+      const key = JSON.parse(json)['default'];
+      if (key) return key;
+    } catch {}
+  }
+  return getRequiredEnv(legacyVar);
+}
+
+const getSecretKey = () => getSupabaseKey('SUPABASE_SECRET_KEYS', 'SUPABASE_SERVICE_ROLE_KEY');
+const getPublishableKey = () => getSupabaseKey('SUPABASE_PUBLISHABLE_KEYS', 'SUPABASE_ANON_KEY');
+
 function mimeFromName(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
   const map: Record<string, string> = {
@@ -64,8 +81,8 @@ Deno.serve(async (req) => {
     if (!authHeader) return jsonResponse({ error: 'Missing Authorization' }, 401);
 
     const supabaseUrl = getRequiredEnv('SUPABASE_URL');
-    const supabaseKey = getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY');
-    const supabaseAnonKey = getRequiredEnv('SUPABASE_ANON_KEY');
+    const supabaseKey = getSecretKey();
+    const supabaseAnonKey = getPublishableKey();
     const openaiKey = getRequiredEnv('OPENAI_API_KEY');
 
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -157,7 +174,7 @@ Deno.serve(async (req) => {
       if (transcriptionId) {
         const admin = createClient(
           getRequiredEnv('SUPABASE_URL'),
-          getRequiredEnv('SUPABASE_SERVICE_ROLE_KEY'),
+          getSecretKey(),
         );
         await admin.from('transcriptions').update({ status: 'error', error: msg }).eq('id', transcriptionId);
       }
